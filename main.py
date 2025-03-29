@@ -5,6 +5,10 @@ import random
 from dataclasses import dataclass, field
 from typing import Generator
 
+import typer
+
+app = typer.Typer()
+
 
 def value2int(value: int | float | None) -> int | None:
     """Converts a float to an int if it's a whole number.
@@ -89,7 +93,9 @@ class Solver:
         return best_node
 
 
-def main() -> None:
+@app.command()
+def demo() -> None:
+    """Runs a demo of the number puzzle solver."""
     numbers = generate_numbers()
     target = generate_target()
 
@@ -105,5 +111,52 @@ def main() -> None:
     )
 
 
+@app.command()
+def play() -> None:
+    """Starts a playable version of the number puzzle."""
+    numbers = generate_numbers()
+    target = generate_target()
+
+    print(f"Target: {target}")
+    print(f"Numbers: {', '.join(map(str, sorted(numbers, reverse=True)))}")
+
+    while True:
+        expression = input("Enter your expression (or type 'quit'): ").strip()
+        if expression.lower() == "quit":
+            break
+        try:
+            # Basic evaluation - be cautious with arbitrary user input in real applications
+            result = eval(expression)
+            if isinstance(result, int):
+                print(f"Your expression evaluates to: {result}")
+                difference = abs(target - result)
+                if difference == 0:
+                    print("Congratulations! You hit the target!")
+                    break
+                else:
+                    print(f"You are {difference} away from the target.")
+            else:
+                print("Result must be an integer.")
+        except Exception as e:
+            print(f"Invalid expression: {e}")
+
+
+@app.command()
+def solve(
+    target: int, numbers: list[int] = typer.Argument(..., help="The list of numbers")
+) -> None:
+    """Solves the number puzzle for a given target and set of numbers."""
+    solver = Solver(numbers, target)
+    node = solver.solve()
+
+    print(f"Target: {target}")
+    print(f"Numbers: {', '.join(map(str, sorted(numbers, reverse=True)))}")
+    print(f"Best expression: {node.expr} = {node.value}")
+    print(f"Difference from target: {node.diff}")
+    print(
+        f"Remaining numbers: [{', '.join(map(str, node.remaining)) if node.remaining else ' '}]"
+    )
+
+
 if __name__ == "__main__":
-    main()
+    app()
