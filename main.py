@@ -63,24 +63,18 @@ class Solver:
         )
         heapq.heappush(self.heap, node)
 
-    def _apply_operations(
-        self, node: State, index: int, number: int
-    ) -> Generator[State, None, None]:
-        remaining = node.remaining[:index] + node.remaining[index + 1 :]
-        for func, s in OPS:
-            value = func(node.value, number)
-            if value is not None:
-                yield State(
-                    expr=s.format(x=node.expr, y=number),
-                    value=value,
-                    diff=abs(self.target - value),
-                    remaining=remaining,
-                )
-
-    def expand_expressions(self, node: State) -> None:
-        for i, num in enumerate(node.remaining):
-            for new_node in self._apply_operations(node, i, num):
-                heapq.heappush(self.heap, new_node)
+    def _apply_operations(self, node: State) -> Generator[State, None, None]:
+        for index, number in enumerate(node.remaining):
+            remaining = node.remaining[:index] + node.remaining[index + 1 :]
+            for func, s in OPS:
+                value = func(node.value, number)
+                if value is not None:
+                    yield State(
+                        expr=s.format(x=node.expr, y=number),
+                        value=value,
+                        diff=abs(self.target - value),
+                        remaining=remaining,
+                    )
 
     def solve(self) -> State:
         best_node = State()
@@ -89,7 +83,8 @@ class Solver:
             best_node = min(best_node, node)
             if node.diff == 0:
                 return node
-            self.expand_expressions(node)
+            for new_node in self._apply_operations(node):
+                heapq.heappush(self.heap, new_node)
         return best_node
 
 
