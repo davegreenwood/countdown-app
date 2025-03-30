@@ -80,11 +80,11 @@ class Solver:
         best_node = State()
         while self.heap:
             node = heapq.heappop(self.heap)
-            best_node = min(best_node, node)
             if node.diff == 0:
                 return node
             for new_node in self._apply_operations(node):
                 heapq.heappush(self.heap, new_node)
+            best_node = min(best_node, node)
         return best_node
 
 
