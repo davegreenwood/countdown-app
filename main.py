@@ -132,7 +132,7 @@ def play() -> None:
                     print(f"You are {difference} away from the target.")
             else:
                 print("Result must be an integer.")
-        except Exception as e:
+        except (SyntaxError, NameError, ZeroDivisionError, TypeError) as e:
             print(f"Invalid expression: {e}")
 
 
