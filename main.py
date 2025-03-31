@@ -55,13 +55,19 @@ class Solver:
     def __init__(self, numbers: list[int], target: int) -> None:
         self.target = target
         self.heap: list[State] = []
-        node = State(
-            expr=str(numbers[0]),
-            value=numbers[0],
-            diff=abs(self.target - numbers[0]),
-            remaining=numbers[1:],
-        )
-        heapq.heappush(self.heap, node)
+        self._init_heap(numbers)
+
+    def _init_heap(self, numbers: list[int]) -> None:
+        """Initialize the heap with the first number and remaining numbers."""
+        for i, number in enumerate(numbers):
+            remaining = numbers[:i] + numbers[i + 1 :]
+            node = State(
+                expr=str(number),
+                value=number,
+                diff=abs(self.target - number),
+                remaining=remaining,
+            )
+            heapq.heappush(self.heap, node)
 
     def _apply_operations(self, node: State) -> Generator[State, None, None]:
         for index, number in enumerate(node.remaining):
